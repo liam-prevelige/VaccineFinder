@@ -8,8 +8,7 @@ If you don't have git, open https://git-scm.com/download/win
 git clone https://github.com/liam-prevelige/VaccineFinder.git
 ```
 2. Once downloaded, open ```find_vaccines.py``` (IDE, Notepad, etc), fill in your address, and save/close.
-3. Run ```setup_environment.bat```.<br />
-A popup will notify you when there's a vaccination opening.
+3. Run ```setup_environment.bat```. A popup will notify you when there's a vaccination opening.
 
 
 Scheduling links:_
