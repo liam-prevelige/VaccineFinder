@@ -4,7 +4,7 @@ If you don't have git:<br />
 Windows: open https://git-scm.com/download/win<br />
 Mac: In terminal, copy & paste: ```git --version```<br />
 <br />
-Then, in terminal, copy & paste the following: <br />
+Then, in terminal, copy & paste the following line by line: <br />
 ```
 git clone https://github.com/liam-prevelige/VaccineFinder.git
 cd VaccineFinder
