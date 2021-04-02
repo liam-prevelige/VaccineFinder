@@ -1,11 +1,15 @@
 Find available vaccine locations at CVS, RiteAid, and Walgreens in your area.
 
-Install using:
+Windows installation instructions:
+If you don't have git, open https://git-scm.com/download/win
+
+1. Open command prompt/terminal and paste:
 ```
 git clone https://github.com/liam-prevelige/VaccineFinder.git
 ```
-
-Open the .py file, fill in your address, and run the file. A popup will notify you when there's a vaccination opening.
+2. Once downloaded, open find_vaccines.py (IDE/notepad), fill in the inputs with your info, and save/close.
+3. Run setup_environment.bat
+A popup will notify you when there's a vaccination opening.
 
 
 Scheduling links:
