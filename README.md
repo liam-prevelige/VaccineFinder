@@ -14,7 +14,7 @@ Then, in the terminal, paste the following line by line:<br />
 cd VaccineFinder
 python find_vaccines.py install
 ```
-A popup will notify you when an appointment is available. <br /> <br /> 
+The program will execute and a popup will notify you when an appointment is available. <br /> <br /> 
 Scheduling links:<br />
 CVS: https://www.cvs.com/vaccine/intake/store/cvd-store-select/first-dose-select <br />
 RiteAid: https://www.riteaid.com/pharmacy/covid-qualifier <br />
