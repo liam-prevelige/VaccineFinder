@@ -10,7 +10,8 @@ git clone https://github.com/liam-prevelige/VaccineFinder.git
 cd VaccineFinder
 python find_vaccines.py install
 ```
-<br /> <br />
+<br /> 
+A popup will notify you when an appointment is available. <br />
 Scheduling links:<br />
 CVS: https://www.cvs.com/vaccine/intake/store/cvd-store-select/first-dose-select <br />
 RiteAid: https://www.riteaid.com/pharmacy/covid-qualifier <br />
