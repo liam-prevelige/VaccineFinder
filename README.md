@@ -5,4 +5,4 @@ Install using:
 git clone https://github.com/liam-prevelige/VaccineFinder.git
 ```
 
-Open the .py file, fill in your address, and run the file. A popup will notify you when a vaccine becomes available.
+Open the .py file, fill in your address, and run the file. A popup will notify you when there's a vaccination opening.
