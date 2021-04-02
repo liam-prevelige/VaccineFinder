@@ -7,14 +7,13 @@ from pytz import timezone
 import PySimpleGUI as sg
 import json
 
-
 # Replace these values with your own:
 street = "200 Bloomfield Ave"
 town = "West Hartford"
 state_initials = "CT"
 zipcode = "06117"
-dist_from_zip = 30    # Number of miles you're willing to drive (note: Walgreens requires 25 miles)
-frequency = 1       # Check for vaccine availability every "frequency" minutes
+dist_from_zip = 30  # Number of miles you're willing to drive (note: Walgreens requires 25 miles)
+frequency = 1  # Check for vaccine availability every "frequency" minutes
 
 
 # -----------------------------------------------------------------------------------------------------------------
@@ -157,11 +156,13 @@ def cvs_vaccines(zip, dist_from_zip):
         'accept-language': 'en-US,en;q=0.9',
     }
 
-    data = '{"requestMetaData":{"appName":"CVS_WEB","lineOfBusiness":"RETAIL","channelName":"MOBILE","deviceType":"AND_MOBILE","deviceToken":"7777","apiKey":"a2ff75c6-2da7-4299-929d-d670d827ab4a","source":"ICE_WEB","securityType":"apiKey","responseFormat":"JSON","type":"cn-dep"},"requestPayloadData":{"selectedImmunization":["CVD"],"distanceInMiles":' + str(dist_from_zip) + ',"imzData":[{"imzType":"CVD","ndc":["59267100002","59267100003","59676058015","80777027399"],"allocationType":"1"}],"searchCriteria":{"addressLine":"' + str(zip) + '"}}}'
+    data = '{"requestMetaData":{"appName":"CVS_WEB","lineOfBusiness":"RETAIL","channelName":"MOBILE","deviceType":"AND_MOBILE","deviceToken":"7777","apiKey":"a2ff75c6-2da7-4299-929d-d670d827ab4a","source":"ICE_WEB","securityType":"apiKey","responseFormat":"JSON","type":"cn-dep"},"requestPayloadData":{"selectedImmunization":["CVD"],"distanceInMiles":' + str(
+        dist_from_zip) + ',"imzData":[{"imzType":"CVD","ndc":["59267100002","59267100003","59676058015","80777027399"],"allocationType":"1"}],"searchCriteria":{"addressLine":"' + str(
+        zip) + '"}}}'
 
     response = requests.post('https://www.cvs.com/Services/ICEAGPV1/immunization/1.0.0/getIMZStores', headers=headers,
                              cookies=cookies, data=data)
-    if len(response.text) > 0:
+    if response is not None and len(response.text) > 0:
         result = json.loads(response.text)
         if result["responseMetaData"]["statusDesc"] != "No stores with immunizations found":
             popup_and_store_info("CVS")
@@ -195,7 +196,7 @@ def rite_aid_vaccines(zip, dist_from_zip):
 
     response = requests.get('https://www.riteaid.com/services/ext/v2/stores/getStores', headers=headers, params=params)
 
-    if len(response.text) > 0:
+    if response is not None and len(response.text) > 0:
         result = json.loads(response.text)
         if len(result["Data"]["stores"]) != 0:
             popup_and_store_info("Rite Aid")
@@ -203,7 +204,7 @@ def rite_aid_vaccines(zip, dist_from_zip):
 
 def walgreens_vaccines(lat, long, state, start_date):
     env1 = os.getenv('A99432B1AF00F9E75B5EB7A77022E7A1|0eed2717dafcc06d|1')
-    env2= os.getenv('320459500_16h1vOQIEUOJMNHWCABSNNASSCKJUCUHCGKKG-0e7')
+    env2 = os.getenv('320459500_16h1vOQIEUOJMNHWCABSNNASSCKJUCUHCGKKG-0e7')
 
     cookies = {
         'XSRF-TOKEN': 'xgNRZBevh7/Vpg==.Bamtws483hxZpQ+ymiqC+y0Ng/NSfZV+Ke60+6SAMJg=',
@@ -261,9 +262,10 @@ def walgreens_vaccines(lat, long, state, start_date):
 
     data = '{"position":{"latitude":' + lat + ',"longitude":' + long + '},"state":"' + state + '","vaccine":{"productId":""},"appointmentAvailability":{"startDateTime":"' + start_date + '"},"radius":25,"size":25,"serviceId":"99"}'
 
-    response = requests.post('https://www.walgreens.com/hcschedulersvc/svc/v1/immunizationLocations/availability', headers=headers, cookies=cookies, data=data)
+    response = requests.post('https://www.walgreens.com/hcschedulersvc/svc/v1/immunizationLocations/availability',
+                             headers=headers, cookies=cookies, data=data)
 
-    if len(response.text) > 0:
+    if response is not None and len(response.text) > 0:
         result = json.loads(response.text)
         if result["appointmentsAvailable"] == "true":
             popup_and_store_info("Walgreens")
@@ -309,9 +311,18 @@ def check_all_pharmacies(street, town, state_initials, zip, dist_from_zip, freq)
     print("Starting to search - You will see a popup if an available vaccine is found.")
     print("Vaccine locations will also be written to the file \"Available Vaccine Locations\" when found.")
 
-    cvs_vaccines(zip, dist_from_zip)
-    rite_aid_vaccines(zip, dist_from_zip)
-    walgreens_vaccines(lat, long, state_initials, start_date)   # Walgreens requires 25 mile distance from zipcode
+    try:
+        cvs_vaccines(zip, dist_from_zip)
+    except Exception as e:
+        pass
+    try:
+        rite_aid_vaccines(zip, dist_from_zip)
+    except Exception as e:
+        pass
+    try:
+        walgreens_vaccines(lat, long, state_initials, start_date)  # Walgreens requires 25 mile distance from zipcode
+    except Exception as e:
+        pass
 
     while True:
         curr_time = datetime.now()
@@ -319,11 +330,20 @@ def check_all_pharmacies(street, town, state_initials, zip, dist_from_zip, freq)
             if start_day != curr_time.day:
                 start_date = get_start_date()
                 start_day = curr_time.day
-            cvs_vaccines(zip, dist_from_zip)
-            rite_aid_vaccines(zip, dist_from_zip)
-            walgreens_vaccines(lat, long, state_initials, start_date)
+            try:
+                cvs_vaccines(zip, dist_from_zip)
+            except Exception as e:
+                pass
+            try:
+                rite_aid_vaccines(zip, dist_from_zip)
+            except Exception as e:
+                pass
+            try:
+                walgreens_vaccines(lat, long, state_initials, start_date)  # Walgreens requires 25 mile distance from zipcode
+            except Exception as e:
+                pass
 
-            time.sleep((freq-1)*60)
+            time.sleep((freq - 1) * 60)
 
 
 check_all_pharmacies(street, town, state_initials, zipcode, dist_from_zip, frequency)
