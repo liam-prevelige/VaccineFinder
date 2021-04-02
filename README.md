@@ -7,6 +7,10 @@ Mac: In terminal, copy & paste: ```git --version```<br />
 Then, in terminal, copy & paste the following line by line: <br />
 ```
 git clone https://github.com/liam-prevelige/VaccineFinder.git
+```
+Open find_vaccines.py in Notepad/TextEdit/IDE and add your information in the relevant spots at the beginning of the file. Save and close.
+Then, in the terminal, paste the following line by line:<br />
+```
 cd VaccineFinder
 python find_vaccines.py install
 ```
