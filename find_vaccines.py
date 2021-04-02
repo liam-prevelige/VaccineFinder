@@ -9,11 +9,11 @@ import json
 
 
 # Replace these values with your own:
-street = "20 Sky Line Drive"
-town = "Easton"
+street = "200 Bloomfield Ave"
+town = "West Hartford"
 state_initials = "CT"
-zipcode = "06612"
-dist_from_zip = 1    # Number of miles you're willing to drive (note: Walgreens requires 25 miles)
+zipcode = "06117"
+dist_from_zip = 30    # Number of miles you're willing to drive (note: Walgreens requires 25 miles)
 frequency = 1       # Check for vaccine availability every "frequency" minutes
 
 
