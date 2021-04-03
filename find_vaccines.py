@@ -374,7 +374,7 @@ def helper_all_pharmacies(zip, dist_from_zip, lat, long, state_initials, start_d
         pharmacy_errors_counts["Walgreens"] += 1
         pharmacy_errors_args["Walgreens"] = e.args
 
-    # check_for_errors(fbase_ref)
+    check_for_errors(fbase_ref)
 
 
 def fbase_report(fbase_ref, key, value):
