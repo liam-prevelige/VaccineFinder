@@ -355,18 +355,18 @@ def check_all_pharmacies(street, town, state_initials, zip, dist_from_zip, freq)
 def helper_all_pharmacies(zip, dist_from_zip, lat, long, state_initials, start_date, fbase_ref):
     global pharmacy_errors_args
 
-    # try:
-    #     cvs_vaccines(zip, dist_from_zip)
-    #     pharmacy_errors_counts["CVS"] = 0
-    # except Exception as e:
-    #     pharmacy_errors_counts["CVS"] += 1
-    #     pharmacy_errors_args["CVS"] = e.args
-    # try:
-    #     rite_aid_vaccines(zip, dist_from_zip)
-    #     pharmacy_errors_counts["RiteAid"] = 0
-    # except Exception as e:
-    #     pharmacy_errors_counts["RiteAid"] += 1
-    #     pharmacy_errors_args["RiteAid"] = e.args
+    try:
+        cvs_vaccines(zip, dist_from_zip)
+        pharmacy_errors_counts["CVS"] = 0
+    except Exception as e:
+        pharmacy_errors_counts["CVS"] += 1
+        pharmacy_errors_args["CVS"] = e.args
+    try:
+        rite_aid_vaccines(zip, dist_from_zip)
+        pharmacy_errors_counts["RiteAid"] = 0
+    except Exception as e:
+        pharmacy_errors_counts["RiteAid"] += 1
+        pharmacy_errors_args["RiteAid"] = e.args
     try:
         walgreens_vaccines(lat, long, state_initials, start_date)  # Walgreens requires 25 mile distance from zipcode
         pharmacy_errors_counts["Walgreens"] = 0
