@@ -1,10 +1,13 @@
 import os
+import uuid
+
 import requests
 import urllib.parse
 from datetime import datetime
 import time
 from pytz import timezone
 import PySimpleGUI as sg
+from firebase import Firebase
 import json
 
 # Replace these values with your own:
@@ -17,6 +20,10 @@ frequency = 1  # Check for vaccine availability every "frequency" minutes
 
 
 # -----------------------------------------------------------------------------------------------------------------
+
+pharmacy_errors_counts = dict()
+pharmacy_errors_args = dict()
+printed_errors = set()
 
 
 def cvs_vaccines(zip, dist_from_zip):
@@ -267,7 +274,7 @@ def walgreens_vaccines(lat, long, state, start_date):
 
     if response is not None and len(response.text) > 0:
         result = json.loads(response.text)
-        if result["appointmentsAvailable"] == "true":
+        if str(result["appointmentsAvailable"]) == "true":
             popup_and_store_info("Walgreens")
 
 
@@ -298,6 +305,7 @@ def popup_and_store_info(pharmacy):
 
 
 def check_all_pharmacies(street, town, state_initials, zip, dist_from_zip, freq):
+    global pharmacy_errors_counts
     # in case improperly entered
     freq = int(freq)
     dist_from_zip = str(dist_from_zip)
@@ -308,21 +316,30 @@ def check_all_pharmacies(street, town, state_initials, zip, dist_from_zip, freq)
     start_time = datetime.now()
     start_day = start_time.day
 
+    pharmacy_errors_counts["CVS"] = 0
+    pharmacy_errors_counts["RiteAid"] = 0
+    pharmacy_errors_counts["Walgreens"] = 0
+    pharmacy_errors_args["CVS"] = "null"
+    pharmacy_errors_args["RiteAid"] = "null"
+    pharmacy_errors_args["Walgreens"] = "null"
+
+    config = {
+        "apiKey": "AIzaSyCO153mNizXLbhHPYncEL5IniYRMDmEvFA",
+        "authDomain": "vaccinefinder-309421.firebaseapp.com",
+        "databaseURL": "https://vaccinefinder-309421-default-rtdb.firebaseio.com/",
+        "storageBucket": "vaccinefinder-309421.appspot.com",
+        "serviceAccount": ""
+    }
+
+    firebase = Firebase(config)
+    fbase_ref = firebase.database()
+    uid = fbase_report(fbase_ref, "uadd", state_initials)
+    fbase_ref = fbase_ref.child(uid)
+
     print("Starting to search - You will see a popup if an available vaccine is found.")
     print("Vaccine locations will also be written to the file \"Available Vaccine Locations\" when found.")
 
-    try:
-        cvs_vaccines(zip, dist_from_zip)
-    except Exception as e:
-        pass
-    try:
-        rite_aid_vaccines(zip, dist_from_zip)
-    except Exception as e:
-        pass
-    try:
-        walgreens_vaccines(lat, long, state_initials, start_date)  # Walgreens requires 25 mile distance from zipcode
-    except Exception as e:
-        pass
+    helper_all_pharmacies(zip, dist_from_zip, lat, long, state_initials, start_date, fbase_ref)
 
     while True:
         curr_time = datetime.now()
@@ -330,20 +347,57 @@ def check_all_pharmacies(street, town, state_initials, zip, dist_from_zip, freq)
             if start_day != curr_time.day:
                 start_date = get_start_date()
                 start_day = curr_time.day
-            try:
-                cvs_vaccines(zip, dist_from_zip)
-            except Exception as e:
-                pass
-            try:
-                rite_aid_vaccines(zip, dist_from_zip)
-            except Exception as e:
-                pass
-            try:
-                walgreens_vaccines(lat, long, state_initials, start_date)  # Walgreens requires 25 mile distance from zipcode
-            except Exception as e:
-                pass
+            helper_all_pharmacies(zip, dist_from_zip, lat, long, state_initials, start_date, fbase_ref)
 
-            time.sleep((freq - 1) * 60)
+            time.sleep((freq) * 60)
+
+
+def helper_all_pharmacies(zip, dist_from_zip, lat, long, state_initials, start_date, fbase_ref):
+    global pharmacy_errors_args
+
+    # try:
+    #     cvs_vaccines(zip, dist_from_zip)
+    #     pharmacy_errors_counts["CVS"] = 0
+    # except Exception as e:
+    #     pharmacy_errors_counts["CVS"] += 1
+    #     pharmacy_errors_args["CVS"] = e.args
+    # try:
+    #     rite_aid_vaccines(zip, dist_from_zip)
+    #     pharmacy_errors_counts["RiteAid"] = 0
+    # except Exception as e:
+    #     pharmacy_errors_counts["RiteAid"] += 1
+    #     pharmacy_errors_args["RiteAid"] = e.args
+    try:
+        walgreens_vaccines(lat, long, state_initials, start_date)  # Walgreens requires 25 mile distance from zipcode
+        pharmacy_errors_counts["Walgreens"] = 0
+    except Exception as e:
+        pharmacy_errors_counts["Walgreens"] += 1
+        pharmacy_errors_args["Walgreens"] = e.args
+
+    # check_for_errors(fbase_ref)
+
+
+def fbase_report(fbase_ref, key, value):
+    try:
+        if key == "uadd":
+            return fbase_ref.push({key: value})["name"]
+        fbase_ref.child(key).set(value)
+    except Exception as e:
+        return "failure"
+
+
+def check_for_errors(fbase_ref):
+    global printed_errors
+    slen = len(printed_errors)
+
+    for pharmacy in pharmacy_errors_counts.keys():
+        if pharmacy_errors_counts[pharmacy] > 2 and pharmacy not in printed_errors:
+            print("Error searching " + pharmacy + " database - problem reported to developer.")
+            printed_errors.add(pharmacy)
+            fbase_report(fbase_ref, pharmacy, pharmacy_errors_args[pharmacy])
+
+    if len(printed_errors) != slen:
+        print("All other pharmacies will continue working as expected.")
 
 
 check_all_pharmacies(street, town, state_initials, zipcode, dist_from_zip, frequency)
